@@ -4,7 +4,7 @@ const Employee = require("../model/employee");
 const verifyToken = require("../controller/verifyToken");
 
 router.post("/addEmployee", verifyToken, async (req, res) => {
-  const { name, email, image, contactNo, profession, category } = req.body;
+  const { name, email, image, contactNo, profession, category,description } = req.body;
   try {
     const employee = new Employee({
       name,
@@ -13,6 +13,7 @@ router.post("/addEmployee", verifyToken, async (req, res) => {
       contactNo,
       profession,
       category,
+      description
     });
     const result = await employee.save();
     res.status(200).send({
