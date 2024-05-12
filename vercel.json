@@ -1,6 +1,6 @@
 {
    "version": 2,
-   "name":"new_server_bhs",
+   "name":"y",
    "builds": [
     {
         "src": "server.js",
