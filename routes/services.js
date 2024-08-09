@@ -3,6 +3,8 @@ const router = express.Router();
 const Services = require("../model/services");
 const verifyToken = require("../controller/verifyToken");
 
+
+// router.po
 router.post("/addService", verifyToken, async (req, res) => {
   const { name, image, description, price, category, date, discount, faqs } =
     req.body;
@@ -15,6 +17,7 @@ router.post("/addService", verifyToken, async (req, res) => {
       category,
       date,
       discount,
+      priceOptions,
       faqs,
     });
     const result = await employee.save();

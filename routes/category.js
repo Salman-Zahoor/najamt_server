@@ -76,10 +76,24 @@ router.put("/updateCategory/:id", verifyToken,async (req, res) => {
   }
 });
 
+// router.delete("/deleteCategories",async (req, res) => {
+//   try {
+//     const result=await Category.deleteMany()
+//     res.status(200).send({
+//       status: "ok",
+//       message: "Category Deleted Successfully",
+//     });
+//   } catch (error) {
+//     res.status(400).send({
+//         status: "error",
+//         message: "Something went wrong",
+//       });
+//   }
+// });
 router.delete("/deleteCategory/:id", verifyToken,async (req, res) => {
   try {
     if (req.params.id) {
-      const result =await Category.findByIdAndDelete({ _id: req.params.id })
+      const result =await Category.deleteMany({ _id: req.params.id })
     //   console.log(result,"resulttttttttttttttt");
       res.status(200).send({
        status: "ok",

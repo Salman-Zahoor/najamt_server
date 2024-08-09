@@ -51,6 +51,19 @@ router.get("/getEmployees", verifyToken, async (req, res) => {
   }
 });
 
+
+router.get("/getEmployeesByUser", async (req, res) => {
+  try {
+    const result = await Employee.find();
+    res.status(200).send({ data: result.reverse(), status: "ok" });
+  } catch (error) {
+    res.status(400).send({
+      status: "error",
+      message: "Something went wrong",
+    });
+  }
+});
+
 router.post("/getEmployeesbyCategory", async (req, res) => {
   try {
     const { category } = req.body;

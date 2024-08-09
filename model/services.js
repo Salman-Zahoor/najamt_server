@@ -6,6 +6,7 @@ const ServicesSchema = new mongoose.Schema(
     image: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, default: 0 },
+    priceOptions:{type:Array,default:[]},
     category: { type: String },
     date: { type: String},
     isShow: { type: Boolean, default: true },

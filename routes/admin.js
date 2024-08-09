@@ -6,6 +6,19 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET =
   "7287sjhjh8hjshjhjshh76@@@#452454525454fgfDF##$#@#45443453fdfdrE#434SwwwW$@#@#$#@%@%$%@$@%@^&hgHG77gy767yty";
 
+
+router.get("/getAdmin",async (req, res) => {
+    try {
+      const result = await Admin.find();
+      res.status(200).send({ data: result, status: "ok" });
+    } catch (error) {
+      res.status(400).send({
+        status: "error",
+        message: "Something went wrong",
+      });
+    }
+  });
+
 router.post("/registerAdmin", async (req, res) => {
   const { email, password, name, image } = req.body;
   let pass = await bcrypt.hash(password, 10); //10 hashing rounds
