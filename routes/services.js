@@ -6,7 +6,7 @@ const verifyToken = require("../controller/verifyToken");
 
 // router.po
 router.post("/addService", verifyToken, async (req, res) => {
-  const { name, image, description, price, category, date, discount, faqs } =
+  const { name, image, description, price, category, date, discount, faqs,priceOptions,features } =
     req.body;
   try {
     const employee = new Services({
@@ -19,6 +19,7 @@ router.post("/addService", verifyToken, async (req, res) => {
       discount,
       priceOptions,
       faqs,
+      features,
     });
     const result = await employee.save();
     res.status(200).send({
@@ -27,7 +28,7 @@ router.post("/addService", verifyToken, async (req, res) => {
       message: "Service added Successfully",
     });
   } catch (error) {
-    // console.log(error, "ERR");
+    console.log(error, "ERR");
     res.status(400).send({ status: "error", message: "Something went wrong" });
   }
 });
@@ -69,12 +70,12 @@ router.post("/getServicesbyCategory", async (req, res) => {
   }
 });
 
-router.post("/getServiceDetailsById/:id", async (req, res) => {
+router.get("/getServiceDetailsById/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await Services.findOne({ _id: id });
-    res.status(200).send({ data: result.reverse(), status: "ok" });
-  } catch (error) {
+    res.status(200).send({ data: result, status: "ok" });
+  } catch (error) {    
     res.status(400).send({
       status: "error",
       message: "Something went wrong",

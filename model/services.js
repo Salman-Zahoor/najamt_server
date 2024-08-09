@@ -12,7 +12,8 @@ const ServicesSchema = new mongoose.Schema(
     isShow: { type: Boolean, default: true },
     discount: { type: Number, default: 0 },
     noOfBookings: { type: Number, defalut: 0 },
-    faqs:{type:Array,default:[]}
+    faqs:{type:Array,default:[]},
+    features:{type:Array,default:[]},
   },
   {
     collection: "Services",
