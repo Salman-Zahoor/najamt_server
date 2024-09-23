@@ -4,35 +4,35 @@ const Bookings = require("../model/bookings");
 const Employees = require("../model/employee");
 const verifyToken = require("../controller/verifyToken");
 
-// Function to find a free employee
-async function findFreeEmployee(selectedDate, selectedTime) {
-  // Logic to find an employee who has no booking at the selected time
-  const employees = await Employees.find(); // Assuming you have an Employees model
-  for (let employee of employees) {
-    const booking = await Bookings.findOne({
-      employeeId: employee._id,
-      serviceDate: selectedDate,
-      serviceTime: {
-        $gte: selectedTime,
-        $lt: new Date(new Date(selectedTime).getTime() + 30 * 60000)
-          .toISOString()
-          .split("T")[1]
-          .slice(0, 5),
-      },
+async function findFreeEmployee(serviceDate, serviceTime) {
+  try {
+    // Find all employees who are not booked at the given date and time
+    const availableEmployees = await Employees.find({
+      _id: {
+        $nin: await Bookings.find({
+          serviceDate,
+          serviceTime
+        }).distinct('employeeId')
+      }
     });
-    if (!booking) {
-      return employee;
-    }
+
+    // Return the first available employee, or null if none are available
+    return availableEmployees.length > 0 ? availableEmployees[0] : null;
+  } catch (error) {
+    console.error('Error in findFreeEmployee:', error);
+    throw new Error('Error while finding a free employee.');
   }
-  return null;
 }
+
 
 router.post("/checkBooking", async (req, res) => {
   try {
-    const { selectedTimeDate, employeeId, autoAssign } = req.body;
+    // Destructure the required fields from req.body
+    const { selectedTime, employeeId, autoAssign } = req.body;
+    console.log(req.body, "reqqq");
 
-    // Convert selectedTimeDate string to a Date object
-    const selectedDateTime = new Date(selectedTimeDate);
+    // Convert selectedTime string to a Date object
+    const selectedDateTime = new Date(selectedTime);
 
     // Define time boundaries for the check (+/- 30 minutes)
     const timeBefore = new Date(selectedDateTime.getTime() - 30 * 60000);
@@ -41,12 +41,12 @@ router.post("/checkBooking", async (req, res) => {
     let booking;
 
     if (autoAssign) {
-      // Find an employee who is free at the selected time
+      // Find any bookings within the specified date and time range
       booking = await Bookings.findOne({
-        serviceDate: selectedDateTime.toISOString().split("T")[0], // Extract date part
+        serviceDate: selectedDateTime.toISOString().split("T")[0],
         serviceTime: {
-          $gte: timeBefore.toLocaleTimeString('en-US', { hour12: false }).slice(0, 5),
-          $lte: timeAfter.toLocaleTimeString('en-US', { hour12: false }).slice(0, 5),
+          $gte: timeBefore.toISOString().split("T")[1].slice(0, 5),
+          $lte: timeAfter.toISOString().split("T")[1].slice(0, 5),
         },
       });
 
@@ -54,10 +54,10 @@ router.post("/checkBooking", async (req, res) => {
         return res.status(400).json({ error: "No available employees at the selected time." });
       }
 
-      // Logic to assign a free employee
+      // Find a free employee based on the given date and time
       const freeEmployee = await findFreeEmployee(
         selectedDateTime.toISOString().split("T")[0],
-        selectedDateTime.toLocaleTimeString('en-US', { hour12: false }).slice(0, 5)
+        selectedDateTime.toISOString().split("T")[1].slice(0, 5)
       );
 
       if (freeEmployee) {
@@ -74,8 +74,8 @@ router.post("/checkBooking", async (req, res) => {
         employeeId,
         serviceDate: selectedDateTime.toISOString().split("T")[0], // Extract date part
         serviceTime: {
-          $gte: timeBefore.toLocaleTimeString('en-US', { hour12: false }).slice(0, 5),
-          $lte: timeAfter.toLocaleTimeString('en-US', { hour12: false }).slice(0, 5),
+          $gte: timeBefore.toISOString().split("T")[1].slice(0, 5),
+          $lte: timeAfter.toISOString().split("T")[1].slice(0, 5),
         },
       });
 
@@ -88,6 +88,7 @@ router.post("/checkBooking", async (req, res) => {
       return res.status(200).json({ message: "No conflicting booking found. Proceed with booking." });
     }
   } catch (error) {
+    console.log(error, "error========>");
     return res.status(500).json({ error: "An error occurred while checking bookings." });
   }
 });
@@ -199,7 +200,6 @@ router.post("/addBooking", async (req, res) => {
       address,
       status,
       phone,
-      name,
     });
     const result = await employee.save();
     res.status(200).send({
