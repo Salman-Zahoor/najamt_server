@@ -33,20 +33,9 @@ router.post("/addService", verifyToken, async (req, res) => {
   }
 });
 
-router.get("/getAllServices", verifyToken, async (req, res) => {
-  try {
-    const result = await Services.find();
-    res.status(200).send({ data: result.reverse(), status: "ok" });
-  } catch (error) {
-    res.status(400).send({
-      status: "error",
-      message: "Something went wrong",
-    });
-  }
-});
 
 router.get("/getAllServices", verifyToken, async (req, res) => {
-  try {
+  try {    
     const { page = 1, perPage = 10 } = req.query; // Default to page 1 and 10 items per page
     const skip = (page - 1) * perPage;
     
@@ -55,8 +44,8 @@ router.get("/getAllServices", verifyToken, async (req, res) => {
     const services = await Services.find()
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .skip(skip)
-      .limit(perPage);
-    
+      .populate("category", "name") // Populate category field (name and description only)
+      .limit(perPage);      
     res.status(200).send({
       data: services,
       totalItems: serviceCount,

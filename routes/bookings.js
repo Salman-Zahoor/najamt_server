@@ -215,8 +215,29 @@ router.post("/addBooking", async (req, res) => {
 
 router.get("/getAllBookings", verifyToken, async (req, res) => {
   try {
-    const result = await Bookings.find();
-    res.status(200).send({ data: result.reverse(), status: "ok" });
+    // Fetch query params for pagination
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit; // Calculate how many items to skip
+
+    // Fetch bookings with pagination and populate serviceId and employeeId
+    const result = await Bookings.find()
+      .populate("serviceId","name") // Populate the service details
+      .populate("employeeId","name") // Populate the employee details
+      .sort({ _id: -1 }) // Sort by _id in descending order
+      .skip(skip) // Skip previous pages
+      .limit(limit); // Limit results to the page size
+
+    // Get the total count of bookings for pagination metadata
+    const total = await Bookings.countDocuments();
+
+    res.status(200).send({
+      data: result,
+      totalPages: Math.ceil(total / limit), // Calculate total pages
+      currentPage: page,
+      totalItems: total,
+      status: "ok",
+    });
   } catch (error) {
     res.status(400).send({
       status: "error",
@@ -224,6 +245,7 @@ router.get("/getAllBookings", verifyToken, async (req, res) => {
     });
   }
 });
+
 
 router.post("/getSBookingDetailsById/:id", async (req, res) => {
   try {
