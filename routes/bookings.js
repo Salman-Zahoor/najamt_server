@@ -183,7 +183,6 @@ router.post("/addBooking", async (req, res) => {
     price,
     employeeId,
     address,
-    status,
     phone,
     name,
     autoAssign,
@@ -203,7 +202,6 @@ router.post("/addBooking", async (req, res) => {
       price,
       employeeId,
       address,
-      status,
       phone,
       paymentType,
     });
