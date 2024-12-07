@@ -14,6 +14,7 @@ const Bookings = new mongoose.Schema(
     phone:{type:String,reuired:true},
     name:{type:String,reuired:true},
     bookingId:{type:String,reuired:true},
+    paymentType:{type:String,reuired:true}
   },
   {
     collection: "Bookings",

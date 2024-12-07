@@ -3,6 +3,7 @@ const router = express.Router();
 const Bookings = require("../model/bookings");
 const Employees = require("../model/employee");
 const verifyToken = require("../controller/verifyToken");
+const nodemailer = require("nodemailer");
 
 async function findFreeEmployee(serviceDate, serviceTime) {
   try {
@@ -170,6 +171,7 @@ router.post("/checkBooking", async (req, res) => {
 //   }
 // });
 
+
 router.post("/addBooking", async (req, res) => {
   const {
     bookingId,
@@ -185,9 +187,12 @@ router.post("/addBooking", async (req, res) => {
     phone,
     name,
     autoAssign,
+    paymentType,
   } = req.body;
+
   try {
-    const employee = new Bookings({
+    // Save booking details to the database
+    const booking = new Bookings({
       bookingId,
       name,
       email,
@@ -200,16 +205,58 @@ router.post("/addBooking", async (req, res) => {
       address,
       status,
       phone,
+      paymentType,
     });
-    const result = await employee.save();
+
+    const result = await booking.save();
+
+    // Configure the email transport
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // or your email service provider
+      auth: {
+        user: "Jobia4801@gmail.com",
+        pass: "grhtvruaqsucqcsz",
+      },
+    });
+
+    // Prepare email content based on payment type
+    let emailSubject = "Booking Confirmation";
+    let emailBody = `Dear ${name},\n\nYour booking with ID ${bookingId} has been successfully added.\n\n`;
+
+    if (paymentType === "cash") {
+      emailBody += "Our representative will contact you for confirmation shortly.";
+    } else if (paymentType === "online") {
+      emailBody += `Please pay the price of the service to the following bank account details:\n\n` +
+        `IBAN: AE58 0260 0010 1587 5678 901\n` +
+        `Account Number: 1015875678901\n` +
+        `Currency: AED\n` +
+        `Swift Code: EBILAEAD\n` +
+        `Routing Number: 302620122\n\n` +
+        `Our representative will connect with you shortly.`;
+    }
+
+    emailBody += "\n\nThank you for choosing our service!";
+
+    // Send the email
+    await transporter.sendMail({
+      from: "najamtalhuda@gmail.com", // sender address
+      to: email, // recipient email
+      subject: emailSubject, // Subject line
+      text: emailBody, // plain text body
+    });
+
+    // Respond with success
     res.status(200).send({
       data: result,
       status: "ok",
-      message: "Booking added Successfully",
+      message: "Booking added successfully and email sent.",
     });
   } catch (error) {
-    // console.log(error, "ERR");
-    res.status(400).send({ status: "error", message: "Something went wrong" });
+    console.error("Error: ", error);
+    res.status(400).send({
+      status: "error",
+      message: "Something went wrong.",
+    });
   }
 });
 
@@ -278,21 +325,62 @@ router.delete("/deleteBooking/:id", verifyToken, async (req, res) => {
 
 router.put("/updateBooking/:id", verifyToken, async (req, res) => {
   const { id } = req.params;
+
   try {
+    const findBooking = await Bookings.findById(id);
+
+    if (!findBooking) {
+      return res.status(404).send({
+        status: "error",
+        message: "Booking not found",
+      });
+    }
+
+    const { status, email, name, bookingId } = findBooking; // Extract details from the existing booking
     const result = await Bookings.findByIdAndUpdate(id, req.body, {
       new: true,
     });
+
+    // Check status and prepare email content
+    if (req.body.status === "confirmed" || req.body.status === "cancelled") {
+      const transporter = nodemailer.createTransport({
+        service: "gmail", // or your email service provider
+        auth: {
+        user: "Jobia4801@gmail.com",
+        pass: "grhtvruaqsucqcsz",
+        },
+      });
+
+      let emailSubject = "Booking Update";
+      let emailBody = `Dear ${name},\n\n`;
+
+      if (req.body.status === "confirmed") {
+        emailBody += `Your booking with ID ${bookingId} has been confirmed.\n\nThank you for choosing our service!`;
+      } else if (req.body.status === "cancelled") {
+        emailBody += `We regret to inform you that your booking with ID ${bookingId} has been cancelled.\n\nIf you have any questions, feel free to contact our support team.`;
+      }
+
+      // Send the email
+      await transporter.sendMail({
+        from: "najamtalhuda@gmail.com", // sender address
+        to: email, // recipient email
+        subject: emailSubject, // Subject line
+        text: emailBody, // plain text body
+      });
+    }
+
     res.status(200).send({
       data: result,
       status: "ok",
       message: "Booking Updated Successfully",
     });
   } catch (error) {
-    //   console.log(error, "ERR");
+    console.error("Error: ", error);
     res.status(400).send({
       status: "error",
       message: "Something went wrong",
     });
   }
 });
+
 module.exports = router;
