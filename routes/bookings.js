@@ -221,9 +221,9 @@ router.post("/addBooking", async (req, res) => {
     let emailSubject = "Booking Confirmation";
     let emailBody = `Dear ${name},\n\nYour booking with ID ${bookingId} has been successfully added.\n\n`;
 
-    if (paymentType === "cash") {
+    if (paymentType == "cash") {
       emailBody += "Our representative will contact you for confirmation shortly.";
-    } else if (paymentType === "online") {
+    } else if (paymentType == "online") {
       emailBody += `Please pay the ${price} of the service to the following bank account details:\n\n` +
         `IBAN: AE58 0260 0010 1587 5678 901\n` +
         `Account Number: 1015875678901\n` +
