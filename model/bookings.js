@@ -10,11 +10,11 @@ const Bookings = new mongoose.Schema(
     price:{type:String,required:true},
     employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", required: true }, // Reference to Category schema
     address:{type:String,reuired:true},
-    status:{type:String,defualt:"Pending"},
     phone:{type:String,reuired:true},
     name:{type:String,reuired:true},
     bookingId:{type:String,reuired:true},
-    paymentType:{type:String,reuired:true}
+    paymentType:{type:String,reuired:true},
+    status:{type:String,require:true,default:"Pending"}
   },
   {
     collection: "Bookings",
