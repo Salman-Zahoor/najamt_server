@@ -23,7 +23,7 @@ mongoose
   .catch((err) => {
     console.log("errrr=>", err);
   });
-
+////Check that api is working
 
 const app = express();
 app.use(cors());
